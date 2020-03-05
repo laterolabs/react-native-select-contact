@@ -60,7 +60,7 @@ RCT_EXPORT_METHOD(openContactSelection:(RCTPromiseResolveBlock)resolve rejecter:
   [contactData setValue:contact.familyName forKey:@"familyName"];
 
   // Return birthday
-  NSDateComponent *birthday = contact.birthday;
+  NSDateComponents *birthday = contact.birthday;
   if (birthday) {
     if (birthday.month != NSDateComponentUndefined && birthday.day != NSDateComponentUndefined) {
       //months are indexed to 0 in JavaScript (0 = January) so we subtract 1 from NSDateComponents.month
