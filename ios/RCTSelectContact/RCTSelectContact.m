@@ -12,7 +12,6 @@
 
 @end
 
-
 @implementation RCTSelectContact
 
 RCT_EXPORT_MODULE(SelectContact);
@@ -20,10 +19,10 @@ RCT_EXPORT_MODULE(SelectContact);
 RCT_EXPORT_METHOD(openContactSelection:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   self._resolve = resolve;
   self._reject = reject;
-  
+
   UIViewController *picker = [[CNContactPickerViewController alloc] init];
   ((CNContactPickerViewController *)picker).delegate = self;
-  
+
   // Launch Contact Picker
   UIViewController *root = [[[UIApplication sharedApplication] delegate] window].rootViewController;
   BOOL modalPresent = (BOOL) (root.presentedViewController);
@@ -39,26 +38,40 @@ RCT_EXPORT_METHOD(openContactSelection:(RCTPromiseResolveBlock)resolve rejecter:
   NSMutableArray *phones = [[NSMutableArray alloc] init];
   NSMutableArray *emails = [[NSMutableArray alloc] init];
   NSMutableArray *addresses = [[NSMutableArray alloc] init];
-  return [[NSMutableDictionary alloc] initWithObjects:@[@"", @"", @"", @"", phones, emails, addresses]
-                                              forKeys:@[@"name", @"givenName", @"middleName", @"familyName", @"phones", @"emails", @"postalAddresses"]];
+  return [[NSMutableDictionary alloc] initWithObjects:@[@"", @"", @"", @"", @"", phones, emails, addresses]
+                                              forKeys:@[@"name", @"givenName", @"middleName", @"familyName", @"birthday", @"phones", @"emails", @"postalAddresses"]];
 }
 
 #pragma mark - CNContactPickerDelegate
 - (void)contactPicker:(CNContactPickerViewController *)picker didSelectContact:(CNContact *)contact {
-  
+
   /* Return NSDictionary ans JS Object to RN, containing basic contact data
    This is a starting point, in future more fields should be added, as required.
    */
   NSMutableDictionary *contactData = [self emptyContactDict];
-  
+
   [contactData setValue:contact.identifier forKey:@"recordId"];
+
   //Return name
   NSString *fullName = [self getFullNameForFirst:contact.givenName middle:contact.middleName last:contact.familyName ];
   [contactData setValue:fullName forKey:@"name"];
   [contactData setValue:contact.givenName forKey:@"givenName"];
   [contactData setValue:contact.middleName forKey:@"middleName"];
   [contactData setValue:contact.familyName forKey:@"familyName"];
-  
+
+  // Return birthday
+  NSDateComponent *birthday = contact.birthday;
+  if (birthday) {
+    if (birthday.month != NSDateComponentUndefined && birthday.day != NSDateComponentUndefined) {
+      //months are indexed to 0 in JavaScript (0 = January) so we subtract 1 from NSDateComponents.month
+      if (birthday.year != NSDateComponentUndefined) {
+        [contactData setObject:@{@"year": @(birthday.year), @"month": @(birthday.month - 1), @"day": @(birthday.day)} forKey:@"birthday"];
+      } else {
+        [contactData setObject:@{@"month": @(birthday.month - 1), @"day":@(birthday.day)} forKey:@"birthday"];
+      }
+    }
+  }
+
   //Return phone numbers
   NSMutableArray* phoneEntries = [contactData valueForKey:@"phones"];
   for (CNLabeledValue<CNPhoneNumber*> *phone in contact.phoneNumbers) {
@@ -69,7 +82,7 @@ RCT_EXPORT_METHOD(openContactSelection:(RCTPromiseResolveBlock)resolve rejecter:
     [phoneEntry setValue:[CNLabeledValue localizedStringForLabel:phoneLabel] forKey:@"type"];
     [phoneEntries addObject:phoneEntry];
   }
-  
+
   //Return email addresses
   NSMutableArray* emailEntries = [contactData valueForKey:@"emails"];
   for (CNLabeledValue<NSString*> *email in contact.emailAddresses) {
@@ -80,7 +93,7 @@ RCT_EXPORT_METHOD(openContactSelection:(RCTPromiseResolveBlock)resolve rejecter:
     [emailEntry setValue:[CNLabeledValue localizedStringForLabel:emailLabel] forKey:@"type"];
     [emailEntries addObject:emailEntry];
   }
-  
+
   // Return postal addresses
   NSMutableArray* addressEntries = [contactData valueForKey:@"postalAddresses"];
   for (CNLabeledValue<CNPostalAddress*> *postalAddress in contact.postalAddresses) {
@@ -93,7 +106,7 @@ RCT_EXPORT_METHOD(openContactSelection:(RCTPromiseResolveBlock)resolve rejecter:
     [addressEntry setValue:[addressInfo ISOCountryCode] forKey:@"isoCountryCode"];
     [addressEntries addObject:addressEntry];
   }
-  
+
   self._resolve(contactData);
 }
 
