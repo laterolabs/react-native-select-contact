@@ -98,6 +98,7 @@ RCT_EXPORT_METHOD(openContactSelection:(RCTPromiseResolveBlock)resolve rejecter:
   NSMutableArray* addressEntries = [contactData valueForKey:@"postalAddresses"];
   for (CNLabeledValue<CNPostalAddress*> *postalAddress in contact.postalAddresses) {
     CNPostalAddress* addressInfo = [postalAddress value];
+    NSString* addressLabel = [postalAddress label];
     NSMutableDictionary<NSString*, NSString*>* addressEntry = [[NSMutableDictionary alloc] init];
     [addressEntry setValue:[addressInfo street] forKey:@"street"];
     [addressEntry setValue:[addressInfo city] forKey:@"city"];
@@ -107,6 +108,7 @@ RCT_EXPORT_METHOD(openContactSelection:(RCTPromiseResolveBlock)resolve rejecter:
     [addressEntry setValue:[addressInfo ISOCountryCode] forKey:@"isoCountryCode"];
     [addressEntry setValue:[addressInfo subAdministrativeArea] forKey:@"subAdministrativeArea"];
     [addressEntry setValue:[addressInfo subLocality] forKey:@"subLocality"];
+    [addressEntry setValue:[CNLabeledValue localizedStringForLabel:addressLabel] forKey:@"type"];
     [addressEntries addObject:addressEntry];
   }
 
