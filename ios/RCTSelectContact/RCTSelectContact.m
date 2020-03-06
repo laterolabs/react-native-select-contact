@@ -103,7 +103,10 @@ RCT_EXPORT_METHOD(openContactSelection:(RCTPromiseResolveBlock)resolve rejecter:
     [addressEntry setValue:[addressInfo city] forKey:@"city"];
     [addressEntry setValue:[addressInfo state] forKey:@"state"];
     [addressEntry setValue:[addressInfo postalCode] forKey:@"postalCode"];
+    [addressEntry setValue:[addressInfo country] forKey:@"country"];
     [addressEntry setValue:[addressInfo ISOCountryCode] forKey:@"isoCountryCode"];
+    [addressEntry setValue:[addressInfo subAdministrativeArea] forKey:@"subAdministrativeArea"];
+    [addressEntry setValue:[addressInfo subLocality] forKey:@"subLocality"];
     [addressEntries addObject:addressEntry];
   }
 
